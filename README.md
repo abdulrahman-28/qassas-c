@@ -292,3 +292,7 @@ Each model directory contains:
 **Prisma client not found** — Run `npx prisma generate` (or `npm install` which runs it automatically via `postinstall`).
 
 **Capsule/pill results differ from bottle/toothbrush** — This is expected: capsules and pills use **patch mode** (the image is split into four 512×512 patches and the worst-case metric across patches is used), while bottles and toothbrushes use a single 512×512 resize.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0.
