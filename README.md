@@ -9,7 +9,7 @@ Qassas detects defects in pharmaceutical/industrial products (bottles, capsules,
 ## Project Structure
 
 ```
-hackathon/
+qassas/
 ├── backend/
 │   ├── api/                      ← FastAPI inference server  ← start here
 │   │   ├── api_server.py
@@ -54,7 +54,7 @@ hackathon/
 1. An operator opens a camera's live monitor page and uploads a product image.
 2. The Next.js app forwards the image to the Python FastAPI backend (`/predict`).
 3. The backend uses a **Stable Diffusion v1.5** model fine-tuned with **OFT (Orthogonal Fine-Tuning)** adapters (one per product category) to reconstruct what a defect-free version should look like.
-4. Five metrics are computed between the original and reconstructed image: **L1, L2, MS-SSIM, LPIPS, Max\_Patch**.
+4. Five metrics are computed between the original and reconstructed image: **L1, L2, MS-SSIM, LPIPS, Max_Patch**.
 5. An **Isolation Forest** model scores the metric vector and compares it against a per-category optimal threshold.
 6. The result (`is_anomalous`, anomaly score, coverage %, heatmap, reconstructed image) is stored in the database and a notification is sent if a defect is found.
 
@@ -62,13 +62,13 @@ hackathon/
 
 ## Prerequisites
 
-| Tool | Minimum version | Notes |
-|------|----------------|-------|
-| Python | 3.10 | 3.11 recommended |
-| Node.js | 18 | 20 LTS recommended |
-| npm | 9 | bundled with Node.js |
-| GPU (CUDA) | optional | CPU works but inference is slow (~30 s/image vs ~2 s on GPU) |
-| ngrok | optional | needed if webapp and Python server run on different machines |
+| Tool       | Minimum version | Notes                                                        |
+| ---------- | --------------- | ------------------------------------------------------------ |
+| Python     | 3.10            | 3.11 recommended                                             |
+| Node.js    | 18              | 20 LTS recommended                                           |
+| npm        | 9               | bundled with Node.js                                         |
+| GPU (CUDA) | optional        | CPU works but inference is slow (~30 s/image vs ~2 s on GPU) |
+| ngrok      | optional        | needed if webapp and Python server run on different machines |
 
 ---
 
@@ -100,12 +100,12 @@ pip install -r requirements.txt
 
 Create a `.env` file in `backend/api/` or set these in your shell:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ALLOW_ORIGIN` | `http://localhost:3000` | CORS origin for the web app |
-| `MODEL_DIR_BASE` | auto-detected | Path to the directory containing `model_bottle/`, `model_capsule/`, etc. Only needed if models are not in the default location (`backend/model/trained_models/`) |
-| `MODEL_DIR_OVERRIDE` | — | Full path to a single model directory; the parent is used as `MODEL_DIR_BASE` |
-| `SD_CACHE_DIR` | HuggingFace default | Custom directory to cache the downloaded Stable Diffusion weights |
+| Variable             | Default                 | Description                                                                                                                                                      |
+| -------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ALLOW_ORIGIN`       | `http://localhost:3000` | CORS origin for the web app                                                                                                                                      |
+| `MODEL_DIR_BASE`     | auto-detected           | Path to the directory containing `model_bottle/`, `model_capsule/`, etc. Only needed if models are not in the default location (`backend/model/trained_models/`) |
+| `MODEL_DIR_OVERRIDE` | —                       | Full path to a single model directory; the parent is used as `MODEL_DIR_BASE`                                                                                    |
+| `SD_CACHE_DIR`       | HuggingFace default     | Custom directory to cache the downloaded Stable Diffusion weights                                                                                                |
 
 ### 4. Start the server
 
@@ -128,9 +128,9 @@ GET http://localhost:8000/health
 
 #### API endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET`  | `/health` | Returns loaded models and their thresholds |
+| Method | Path       | Description                                                                                                                                                                      |
+| ------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/health`  | Returns loaded models and their thresholds                                                                                                                                       |
 | `POST` | `/predict` | Accepts `file` (image) + `product_type` form fields; returns JSON with `is_anomalous`, `score`, `threshold`, `coverage`, `metrics`, `heatmap` (base64), `reconstructed` (base64) |
 
 ---
@@ -163,6 +163,7 @@ PYTHON_API_URL="http://localhost:8000"
 ```
 
 **Getting these values:**
+
 - `DATABASE_URL` and `NEON_AUTH_BASE_URL` — from your [Neon Console](https://console.neon.tech) project settings.
 - `NEON_AUTH_COOKIE_SECRET` — generate a random secret: `openssl rand -base64 32`
 - `PYTHON_API_URL` — the address of your running Python server (see below).
@@ -198,15 +199,15 @@ npm start
 
 ### Web App Features
 
-| Page | Role | Description |
-|------|------|-------------|
-| `/dashboard` | Admin / Operator | Overview metrics and recent inspection results |
-| `/monitor/[cameraId]` | Operator | Live inspection: upload image, view heatmap & reconstruction side-by-side |
-| `/history` | Admin / Operator | Filterable history of all inspection results |
-| `/history/[id]` | Admin / Operator | Detailed view of a single inspection result |
-| `/lines` | Admin | Manage production lines / cameras |
-| `/my-lines` | Operator | View the operator's assigned cameras |
-| `/operators` | Admin | Add, edit, and remove operator accounts |
+| Page                  | Role             | Description                                                               |
+| --------------------- | ---------------- | ------------------------------------------------------------------------- |
+| `/dashboard`          | Admin / Operator | Overview metrics and recent inspection results                            |
+| `/monitor/[cameraId]` | Operator         | Live inspection: upload image, view heatmap & reconstruction side-by-side |
+| `/history`            | Admin / Operator | Filterable history of all inspection results                              |
+| `/history/[id]`       | Admin / Operator | Detailed view of a single inspection result                               |
+| `/lines`              | Admin            | Manage production lines / cameras                                         |
+| `/my-lines`           | Operator         | View the operator's assigned cameras                                      |
+| `/operators`          | Admin            | Add, edit, and remove operator accounts                                   |
 
 ---
 
@@ -261,15 +262,16 @@ Then open [http://localhost:3000](http://localhost:3000).
 
 Each product category has its own directory under `backend/model/trained_models/`:
 
-| Directory | Contents |
-|-----------|----------|
-| `model_bottle/` | OFT LoRA adapter + Isolation Forest + config |
-| `model_capsule/` | OFT LoRA adapter + Isolation Forest + config |
-| `model_pill/` | OFT LoRA adapter + Isolation Forest + config |
+| Directory           | Contents                                     |
+| ------------------- | -------------------------------------------- |
+| `model_bottle/`     | OFT LoRA adapter + Isolation Forest + config |
+| `model_capsule/`    | OFT LoRA adapter + Isolation Forest + config |
+| `model_pill/`       | OFT LoRA adapter + Isolation Forest + config |
 | `model_toothbrush/` | OFT LoRA adapter + Isolation Forest + config |
-| `model_all/` | Combined adapter trained on all categories |
+| `model_all/`        | Combined adapter trained on all categories   |
 
 Each model directory contains:
+
 - `adapter_config.json` / `adapter_model.safetensors` — OFT LoRA weights
 - `iforest_model.pkl` — trained Isolation Forest
 - `model_config.json` — optimal threshold, strength, guidance scale
