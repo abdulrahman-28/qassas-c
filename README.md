@@ -1,6 +1,6 @@
 # Qassas — AI-Powered Manufacturing Quality Control
 
-Qassas detects defects in pharmaceutical/industrial products (bottles, capsules, pills, toothbrushes) using a diffusion-based anomaly detection pipeline. A fine-tuned Stable Diffusion model reconstructs what a normal product should look like, then compares it against the real image using five image quality metrics scored by an Isolation Forest model.
+**Qassas** detects defects in pharmaceutical/industrial products (bottles, capsules, pills, toothbrushes) using a diffusion-based anomaly detection pipeline. A fine-tuned Stable Diffusion model reconstructs what a normal product should look like, then compares it against the real image using five image quality metrics scored by an Isolation Forest model.
 
 **Performance:** 97% recall · 88% F1 · 78.3% accuracy
 
