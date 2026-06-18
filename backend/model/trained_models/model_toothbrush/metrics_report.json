@@ -1,0 +1,7 @@
+{
+    "Category": "toothbrush",
+    "Accuracy": 0.6666666666666666,
+    "F1": 0.7741935483870968,
+    "Recall": 0.8,
+    "Precision": 0.75
+}

@@ -1,0 +1,55 @@
+@import "tailwindcss";
+@import "@neondatabase/auth/ui/tailwind";
+@plugin "daisyui" {
+  themes: light;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+}
+
+/*
+ * DaisyUI light theme sets --border: 1px (a width, not a color).
+ * Neon Auth reads --border as a color fallback for --neon-border, turning it
+ * into an invalid color. Browsers then fall back to currentColor (near-black),
+ * giving every bordered element a black border.
+ *
+ * Fix: define all --neon-* color tokens explicitly so they never resolve
+ * through DaisyUI's --border variable.
+ */
+:root {
+  --neon-border:              #e2e8f0; /* slate-200 */
+  --neon-input:               #e2e8f0;
+  --neon-ring:                #2563eb; /* blue-600 */
+  --neon-background:          #ffffff;
+  --neon-foreground:          #0f172a; /* slate-900 */
+  --neon-card:                #ffffff;
+  --neon-card-foreground:     #0f172a;
+  --neon-popover:             #ffffff;
+  --neon-popover-foreground:  #0f172a;
+  --neon-primary:             #2563eb; /* blue-600 */
+  --neon-primary-foreground:  #ffffff;
+  --neon-secondary:           #f8fafc; /* slate-50 */
+  --neon-secondary-foreground:#0f172a;
+  --neon-muted:               #f8fafc;
+  --neon-muted-foreground:    #64748b; /* slate-500 */
+  --neon-accent:              #f1f5f9; /* slate-100 */
+  --neon-accent-foreground:   #0f172a;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

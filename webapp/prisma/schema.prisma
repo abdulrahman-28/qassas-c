@@ -1,0 +1,233 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum UserRole {
+  ADMIN
+  OPERATOR
+}
+
+enum ModelStatus {
+  TRAINING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+enum CameraStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+enum ProductType {
+  BOTTLE
+  CAPSULE
+  PILL
+  TOOTHBRUSH
+  ALL
+}
+
+model User {
+  id           String        @id @default(cuid())
+  username     String     @unique
+  passwordHash String
+  role         UserRole   @default(OPERATOR)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now())
+
+  // Relations
+  logs             SystemLog[]
+  uploadedDatasets TrainingDataset[] @relation("DatasetUploader")
+  createdConfigs   ModelConfig[]     @relation("ConfigCreator")
+  verifiedResults  AnomalyResult[]   @relation("ResultVerifier")
+  assignedCameras  Camera[]          @relation("AssignedOperator")
+}
+
+model SystemLog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  time      DateTime @default(now())
+
+  // who did it
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, time])
+}
+
+model TrainingDataset {
+  id           Int      @id @default(autoincrement())
+  datasetName  String
+  storagePath  String   // مكان التخزين (S3/local path)
+  uploadedDate DateTime @default(now())
+
+  uploadedById String?
+  uploadedBy   User?    @relation("DatasetUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  // Relations
+  trainingRuns TrainingRun[]
+
+  @@index([uploadedDate])
+}
+
+model ModelConfig {
+  id               Int      @id @default(autoincrement())
+
+  // من الدياجرام
+  thresholds       Float
+  learningRate     Float
+  epochs           Int
+  batchSize        Int
+  loraAlpha        Float
+  baseModelVersion String
+  loraRank         Int
+  prompt           String
+
+  createdAt        DateTime @default(now())
+
+  createdById      String?
+  createdBy        User?    @relation("ConfigCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  // Relations
+  models           DiffusionModel[]
+  trainingRuns     TrainingRun[]
+
+  @@index([createdAt])
+}
+
+model DiffusionModel {
+  id            Int         @id @default(autoincrement())
+  modelVersion  String
+  status        ModelStatus @default(TRAINING)
+  lastTrained   DateTime?
+  accuracyScore Float?
+
+  // Uses params from (ModelConfig)
+  modelConfigId Int
+  modelConfig   ModelConfig @relation(fields: [modelConfigId], references: [id], onDelete: Restrict)
+
+  // Relations
+  trainingRuns  TrainingRun[]
+  results       AnomalyResult[]
+
+  @@index([status])
+  @@index([modelConfigId])
+}
+
+model Camera {
+  id           Int          @id @default(autoincrement())
+  name         String
+  location     String
+  status       CameraStatus @default(ACTIVE)
+  productType  ProductType  @default(ALL)
+
+  assignedToId String?
+  assignedTo   User?        @relation("AssignedOperator", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  // Relations
+  images       InputImage[]
+
+  @@index([status])
+  @@index([assignedToId])
+}
+
+model InputImage {
+  id            Int      @id @default(autoincrement())
+  captureTime   DateTime @default(now())
+
+  // في الدياجرام مكتوبة String CameraSourceID
+  // نخليها اختيارية كـ"معرّف خارجي" لو الكاميرا تبعث ID مختلف
+  cameraSourceId String?
+
+  // الأفضل نخزن الصورة كـ path (مو bytes) عشان الأداء
+  imagePath      String?
+
+  // إذا مصرّ تخزين bytes داخل DB (مو مستحسن للإنتاج)
+  imageBytes     Bytes?
+
+  // Relations
+  cameraId       Int?
+  camera         Camera?  @relation(fields: [cameraId], references: [id], onDelete: SetNull)
+
+  result         AnomalyResult?
+
+  @@index([captureTime])
+  @@index([cameraId])
+}
+
+model AnomalyResult {
+  id              Int      @id @default(autoincrement())
+  isAnomalous     Boolean
+  anomalyScore    Float
+  threshold       Float?
+  coverage        Float?
+  metrics         Json?
+  heatmapData     String?  @db.Text
+  reconstructedData String? @db.Text
+  heatmapPath     String?
+  operatorVerified Boolean @default(false)
+
+  createdAt       DateTime @default(now())
+
+  // Relations
+  imageId         Int     @unique
+  image           InputImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  modelId         Int?
+  model           DiffusionModel? @relation(fields: [modelId], references: [id], onDelete: SetNull)
+
+  verifiedById    String?
+  verifiedBy      User?   @relation("ResultVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  notifications   Notification[]
+
+  @@index([createdAt])
+  @@index([isAnomalous])
+  @@index([operatorVerified])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  message   String
+  isRead    Boolean  @default(false)
+  timestamp DateTime @default(now())
+
+  // Relations
+  resultId  Int
+  result    AnomalyResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+
+  @@index([resultId, timestamp])
+  @@index([isRead])
+}
+
+model TrainingRun {
+  id            Int      @id @default(autoincrement())
+  startedAt     DateTime @default(now())
+  endedAt       DateTime?
+  status        ModelStatus @default(TRAINING)
+
+  datasetId     Int
+  dataset       TrainingDataset @relation(fields: [datasetId], references: [id], onDelete: Restrict)
+
+  configId      Int
+  config        ModelConfig @relation(fields: [configId], references: [id], onDelete: Restrict)
+
+  modelId       Int
+  model         DiffusionModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@index([startedAt])
+  @@index([modelId, startedAt])
+}

@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+python-multipart
+torch
+torchvision
+diffusers
+peft
+transformers
+accelerate
+scikit-learn
+Pillow
+opencv-python
+joblib
+lpips
+pytorch-msssim
