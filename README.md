@@ -16,19 +16,21 @@ qassas/
 │   │   ├── metrics_factory.py
 │   │   ├── config.py
 │   │   └── requirements.txt
-│   └── model/                    ← Training scripts + trained models
-│       ├── main.py               ← OFT fine-tuning script
-│       ├── train_iforest.py      ← Isolation Forest training
-│       ├── inference_iforest.py
-│       ├── anomal_score.py
-│       ├── metrics_factory.py
-│       ├── config.py
-│       └── trained_models/
-│           ├── model_bottle/
-│           ├── model_capsule/
-│           ├── model_pill/
-│           ├── model_toothbrush/
-│           └── model_all/
+│   ├── model
+│   │   ├── anomal_score.py
+│   │   ├── config.py
+│   │   ├── fast_utils.c
+│   │   ├── fast_utils.cpython-312-x86_64-linux-gnu.so
+│   │   ├── fast_utils.pyx
+│   │   ├── generate_synthetic_data.py
+│   │   ├── inference_iforest.py
+│   │   ├── main.py
+│   │   ├── metrics_factory.py
+│   │   ├── optimize_omni.py
+│   │   ├── setup.py
+│   │   ├── test.py
+│   │   ├── test_single.py
+│   │   └── train_iforest.py
 └── webapp/                       ← Next.js 16 web application
     ├── app/
     │   ├── dashboard/            ← Admin & operator dashboards
